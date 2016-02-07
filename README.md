@@ -1,7 +1,7 @@
 # Docker image Magento2 with Magento Testing Framework (MTF)
 
 
-Used for continious integration/delivery of Magento2 components (modules,themes etc ...)
+Used for continuous integration/delivery of Magento2 components (modules,themes etc ...)
 This image, based on official php repo, install magento2 and MTF sources with composer.
 
 You can run your container in detached if you want.

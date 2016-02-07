@@ -12,4 +12,4 @@ Thumbs.db
 ################
 start-machine
 docker-compose.yml
-conf/auth.json
+*.env

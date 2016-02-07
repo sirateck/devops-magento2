@@ -87,7 +87,7 @@ if [ $MAGE_REINSTALL = 1 ] || [ ! -f /var/www/html/magento2/app/etc/config.php ]
 	gosu magento2 magento cache:disable
 
 fi
-echo "Command arguments $@"
+
 if [ "$1" = 'magento' ] || [ "$1" = 'phpunit' ]; then
 	echo "Execute command $@"
 	service apache2 start

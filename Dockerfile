@@ -60,13 +60,24 @@ WORKDIR /var/www/html/magento2
 # Copy auth.json (required by repo.magento.com) in HOME directories
 # Copy composer.json
 #===========================
-COPY conf/auth.json /home/magento2/.composer/
-COPY conf/auth.json /root/.composer/
-RUN chown -R magento2:magento2 /home/magento2/ && chmod -R 770 /home/magento2/
-COPY conf/composer.json.dist composer.json
+#COPY conf/auth.json /home/magento2/.composer/
+#COPY conf/auth.json /root/.composer/
+#RUN chown -R magento2:magento2 /home/magento2/ && chmod -R 770 /home/magento2/
+#COPY conf/composer.json.dist composer.json
 
-# Get Magento CE metapackage and sample data
-RUN composer install
+# Get Magento CE release and sample data
+
+RUN curl -o magento2-CE-2.0.2.tar.gz -sSOL https://github.com/magento/magento2/archive/2.0.2.tar.gz \
+ && tar -xzf magento2-CE-2.0.2.tar.gz
+
+RUN curl -o magento2-sample-data-2.0.2.tar.gz -sSOL https://github.com/magento/magento2-sample-data/archive/2.0.2.tar.gz \
+  && tar -xzf magento2-sample-data-2.0.2.tar.gz
+
+RUN cp -rf magento2-2.0.2/* .
+RUN cp magento2-2.0.2/.htaccess .
+RUN cp -rf magento2-sample-data-2.0.2/* .
+
+RUN rm -rf magento2-CE-2.0.2.tar.gz magento2-sample-data-2.0.2.tar.gz magento2-2.0.2/ magento2-sample-data-2.0.2/
 
 # Get dockerize (used for waiting services)
 RUN curl -o dockerize-linux-amd64-v0.2.0.tar.gz -sSOL https://github.com/jwilder/dockerize/releases/download/v0.2.0/dockerize-linux-amd64-v0.2.0.tar.gz
@@ -124,9 +135,9 @@ ENV MAGE_DB_NAME magento2
 ENV MAGE_DB_USER magento2
 ENV MAGE_DB_PASSWORD magento2
 ENV MAGE_DB_PREFIX mage_
-ENV MAGE_LANGUAGE fr_FR
-ENV MAGE_CURRENCY EUR
-ENV MAGE_TIMEZONE Europe/Paris
+ENV MAGE_LANGUAGE en_US
+ENV MAGE_CURRENCY USD
+ENV MAGE_TIMEZONE America/Chicago
 ENV MAGE_USE_REWRITES 1
 ENV MAGE_USE_SECURE 0
 ENV MAGE_USE_SECURE_ADMIN 0
@@ -148,11 +159,11 @@ ENV MAGE_SALES_ORDER_INCREMENT_PREFIX 0
 RUN sed -i -e"s/#   SetEnv MAGE_MODE developer/   SetEnv MAGE_MODE developer/g" .htaccess
 
 #=======================
-# Dockerize MFT config
+# Dockerize MTF config
 #=======================
 COPY conf/mtf/phpunit.xml.tmpl /tmp/
 COPY conf/mtf/credentials.xml.tmpl /tmp/
-COPY conf/mft/etc/config.xml.tmpl /tmp/etc/
+COPY conf/mtf/etc/config.xml.tmpl /tmp/etc/
 
 #==========================
 # Selenium config (default host: selenium)
