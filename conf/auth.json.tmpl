@@ -1,0 +1,11 @@
+{
+   "github-oauth": {
+     "github.com": "{{ .Env.GITHUB_API_TOKEN }}"
+   },
+   "http-basic": {
+      "repo.magento.com": {
+         "username": "{{ .Env.MAGE_ACCOUNT_PUBLIC_KEY }}",
+         "password": "{{ .Env.MAGE_ACCOUNT_PRIVATE_KEY }}"
+      }
+   }
+}

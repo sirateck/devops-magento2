@@ -55,18 +55,7 @@ RUN usermod -a -G magento2 www-data
 
 WORKDIR /var/www/html/magento2
 
-#===========================
-# Copy composer config
-# Copy auth.json (required by repo.magento.com) in HOME directories
-# Copy composer.json
-#===========================
-#COPY conf/auth.json /home/magento2/.composer/
-#COPY conf/auth.json /root/.composer/
-#RUN chown -R magento2:magento2 /home/magento2/ && chmod -R 770 /home/magento2/
-#COPY conf/composer.json.dist composer.json
-
 # Get Magento CE release and sample data
-
 RUN curl -o magento2-CE-2.0.2.tar.gz -sSOL https://github.com/magento/magento2/archive/2.0.2.tar.gz \
  && tar -xzf magento2-CE-2.0.2.tar.gz
 
@@ -111,11 +100,18 @@ RUN echo 'PATH=/var/www/html/magento2/bin:$PATH' >> /home/magento2/.profile
 #==========================
 ENV MYSQL_ROOT_PASSWORD magento2
 
+#=================================================
+# ENV credentials for repo.magento.com and github
+#================================================
+ENV GITHUB_API_TOKEN ''
+ENV MAGE_ACCOUNT_PUBLIC_KEY ''
+ENV MAGE_ACCOUNT_PRIVATE_KEY ''
+COPY conf/auth.json.tmpl /tmp/
 # Force complete reinstallaiton
 ENV MAGE_REINSTALL  0
 
 #====================================================
-# If you want to use with installation or reinstallaiton,
+# If you want to use sample data with installation or reinstallaiton,
 # set command argument value else let it empty
 # Eg. ENV MAGE_INSTALL_SAMPLE_DATA --use-sample-data
 #=====================================================
@@ -127,7 +123,7 @@ ENV MAGE_ADMIN_EMAIL john.doe@yopmail.com
 ENV MAGE_ADMIN_USER admin
 ENV MAGE_ADMIN_PWD admin123
 ENV MAGE_BASE_URL http://127.0.0.1:8080/magento2
-ENV MAGE_BASE_URL_SECURE https://127.0.0.1.101:8080/magento2
+ENV MAGE_BASE_URL_SECURE https://127.0.0.1:8080/magento2
 ENV MAGE_BACKEND_FRONTNAME admin
 ENV MAGE_DB_HOST db
 ENV MAGE_DB_PORT 3306
