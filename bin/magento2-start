@@ -87,15 +87,25 @@ if [ $MAGE_REINSTALL = 1 ] || [ ! -f /var/www/html/magento2/app/etc/config.php ]
 		--key=$MAGE_KEY \
 		--db-init-statements="$MAGE_DB_INIT_STATEMENTS" \
 		--sales-order-increment-prefix="$MAGE_SALES_ORDER_INCREMENT_PREFIX" $MAGE_CLEANUP_DATABASE $MAGE_INSTALL_SAMPLE_DATA
+
+fi
+
+echo "\n* Set deploy mode to developer"
+gosu magento2 magento deploy:mode:set $MAGE_RUN_DEPLOY_MODE
+
+if [ $MAGE_RUN_REINDEX = 1 ]; then
 	echo "\n* Reindex all indexes ..."
 	gosu magento2 magento indexer:reindex
+fi
 
-	echo "\n* Set deploy mode to developer"
-	gosu magento2 magento deploy:mode:set developer
-
+if [ $MAGE_RUN_DISABLE_CACHE = 1 ]; then
 	echo "\n* Disable all cache types"
 	gosu magento2 magento cache:disable
+fi
 
+if [ $MAGE_RUN_STATIC_DEPLOY = 1 ]; then
+	echo "\n* Deploy static content ..."
+	gosu magento2 magento setup:static-content:deploy
 fi
 
 if [ "$1" = 'magento' ] || [ "$1" = 'phpunit' ]; then

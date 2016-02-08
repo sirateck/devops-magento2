@@ -140,16 +140,22 @@ ENV MAGE_USE_SECURE_ADMIN 0
 ENV MAGE_ADMIN_USE_SECURITY_KEY 0
 ENV MAGE_SESSION_SAVE files
 ENV MAGE_KEY 69c60a47f9dca004e47bf8783f4b9408
-
 #====================================================
 # If you want to clean database with reinstallation,
 # set command argument value else let it empty
 # Eg. ENV MAGE_CLEANUP_DATABASE --cleanup-database
 #=====================================================
 ENV MAGE_CLEANUP_DATABASE ''
-
 ENV MAGE_DB_INIT_STATEMENTS  SET NAMES utf8;
 ENV MAGE_SALES_ORDER_INCREMENT_PREFIX 0
+
+#=================================================
+# Env var used after installation
+#=================================================
+ENV MAGE_RUN_REINDEX 1
+ENV MAGE_RUN_DISABLE_CACHE 1
+ENV MAGE_RUN_STATIC_DEPLOY 1
+ENV MAGE_RUN_DEPLOY_MODE developer
 
 # Set developer mode in htaccess
 RUN sed -i -e"s/#   SetEnv MAGE_MODE developer/   SetEnv MAGE_MODE developer/g" .htaccess
