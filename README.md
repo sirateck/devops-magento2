@@ -112,13 +112,6 @@ CUSTOM_PACKAGES=magento/sample-module-webflow dev-master
 CUSTOM_MODULES=Magento_SampleWebFlow
 ```
 
-You can put many values separated by a comma like this:
-```
-CUSTOM_REPOSITORIES=vcs git@github.com:magento/magento2-samples.git, antoher_type another_repo
-CUSTOM_PACKAGES=magento/sample-module-webflow dev-master,magento/sample-module-newpage
-CUSTOM_MODULES=Magento_SampleWebFlow,Magento_SampleNewPage
-```
-
 In `CUSTOM_REPOSITORIES` variable you must do enter **type** and **repository**.  
 In `CUSTOM_PACKAGES`, it's possible to add version or branch name.  
 See https://getcomposer.org/doc/05-repositories.md
