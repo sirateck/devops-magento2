@@ -94,22 +94,19 @@ if [ $MAGE_REINSTALL = 1 ] || [ ! -f /var/www/html/magento2/app/etc/config.php ]
 fi
 
 # Add custom repository to composer config
-if [ ! -z $CUSTOM_REPOSITORIES ]; then
+if [ ! -z "$CUSTOM_REPOSITORIES" ]; then
 		gosu magento2 composer config repositories.1 $CUSTOM_REPOSITORIES
-	done
 fi
 
 # Add required package
-if [ ! -z $CUSTOM_PACKAGES ]; then
+if [ ! -z "$CUSTOM_PACKAGES" ]; then
 		gosu magento2 composer require $CUSTOM_PACKAGES
-	done
 fi
 
 # Enable/Install modules
-if [ ! -z $CUSTOM_MODULES ]; then
+if [ ! -z "$CUSTOM_MODULES" ]; then
 	gosu magento2 magento module:enable --clear-static-content $CUSTOM_MODULES
 	gosu magento2 magento setup:upgrade
-	done
 fi
 
 printf "\n* Set deploy mode to developer\n"
