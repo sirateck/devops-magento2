@@ -1,21 +1,24 @@
-#!/bin/sh
+#!/bin/bash
 set +e
 
-echo "\n* Dockerize templates and Wait for Mysql server"
+printf "\n* Dockerize templates and Wait for Mysql server"
 # Create .composer directory to copy auth.json
-gosu magento2 mkdir /home/magento2/.composer
+gosu magento2 mkdir /home/magento2/.composer > /dev/null 2>&1
 
 gosu magento2 dockerize -template /tmp/auth.json.tmpl:/home/magento2/.composer/auth.json \
 												-template /tmp/phpunit.xml.tmpl:dev/tests/functional/phpunit.xml \
 												-template /tmp/credentials.xml.tmpl:dev/tests/functional/credentials.xml \
-												-template /tmp/etc/config.xml.tmpl:dev/tests/functional/etc/config.xml \
+												-template /tmp/config.xml.tmpl:dev/tests/functional/etc/config.xml \
 												-wait tcp://$MAGE_DB_HOST:$MAGE_DB_PORT
-# delete templates
-rm -rf /tmp/*
+# Template files are not deleted may be are reused by --env-file argument
 
 
-echo "\n* Run composer install "
+
+printf "\n* Run composer install "
 gosu magento2 composer install
+
+printf "\n* Set minimum-statility to 'dev' in composer.json "
+gosu magento2 sed -i -e"s/\"minimum-stability\": \"alpha\"/\"minimum-stability\": \"dev\"/g" composer.json
 
 # Check if database exists or if Reinstall is true
 # If not, try to create db and user granted
@@ -32,10 +35,10 @@ if [ -z $DB_EXISTS ]; then
 fi
 
 if [ $MAGE_REINSTALL = 1 ] || [ ! -f /var/www/html/magento2/app/etc/config.php ] && [ ! -f /var/www/html/magento2/app/etc/env.php ]; then
-	echo "\n* Start Magento2 Command line intallation ..."
+	printf "\n* Start Magento2 Command line intallation ..."
 
-	echo "\n* Run install command: "
-	echo "\n 		su magento2 -c 'bin/magento setup:install'  \\ "
+	printf "\n* Run install command: "
+	printf "\n 		su magento2 -c 'bin/magento setup:install \n'  \\ "
 	echo "					'--db-host=$MAGE_DB_HOST' \\ "
 	echo "					'--db-name=$MAGE_DB_NAME' \\"
 	echo "					'--db-user=$MAGE_DB_USER' \\"
@@ -89,29 +92,80 @@ if [ $MAGE_REINSTALL = 1 ] || [ ! -f /var/www/html/magento2/app/etc/config.php ]
 		--sales-order-increment-prefix="$MAGE_SALES_ORDER_INCREMENT_PREFIX" $MAGE_CLEANUP_DATABASE $MAGE_INSTALL_SAMPLE_DATA
 
 fi
+# Transform string vars to array
+OLDIFS=$IFS
+IFS=','
+read -r -a CUSTOM_REPOSITORIES <<< "$CUSTOM_REPOSITORIES"
+read -r -a CUSTOM_PACKAGES <<< "$CUSTOM_PACKAGES"
+read -r -a CUSTOM_MODULES <<< "$CUSTOM_MODULES"
+IFS=$OLDIFS
+# Add custom repositories to composer config
+if [ ! ${#CUSTOM_REPOSITORIES[*]} = 0 ]; then
+	cnt_repo=$((${#CUSTOM_REPOSITORIES[*]} - 1))
+	for i in `seq 0 $cnt_repo`
+	do
+		j=$(($i + 100)) # increase j to not erase magento repo
+		gosu magento2 composer config repositories.$j ${CUSTOM_REPOSITORIES[$i]}
+	done
 
-echo "\n* Set deploy mode to developer"
+fi
+
+# Add required packages
+for package in ${CUSTOM_PACKAGES[*]}; do
+	printf "\n Install package $package"
+	gosu magento2 composer require $package
+done
+
+# Enable/Install modules
+for module in ${CUSTOM_MODULES[*]}; do
+	gosu magento2 magento module:enable --clear-static-content $module
+	gosu magento2 magento setup:upgrade
+done
+
+printf "\n* Set deploy mode to developer\n"
 gosu magento2 magento deploy:mode:set $MAGE_RUN_DEPLOY_MODE
 
+# @TODO check if it is really necessary
+if [ $MAGE_ENABLE_MODULE_MAGENTO_DEVELOPER = 1 ]; then
+	printf "\n* Enable Module Magento_Developer ...\n"
+	gosu magento2 magento module:enable Magento_Developer
+fi
+
 if [ $MAGE_RUN_REINDEX = 1 ]; then
-	echo "\n* Reindex all indexes ..."
+	printf "\n* Reindex all indexes ..."
 	gosu magento2 magento indexer:reindex
 fi
 
-if [ $MAGE_RUN_DISABLE_CACHE = 1 ]; then
-	echo "\n* Disable all cache types"
+if [ $MAGE_RUN_CACHE_CLEAN = 1 ]; then
+	printf "\n* Clean cache"
+	gosu magento2 magento cache:clean
+fi
+
+if [ $MAGE_RUN_CACHE_FLUSH = 1 ]; then
+	printf "\n* Flush cache"
+	gosu magento2 magento cache:flush
+fi
+
+if [ $MAGE_RUN_CACHE_DISABLE = 1 ]; then
+	printf "\n* Disable all cache types"
 	gosu magento2 magento cache:disable
 fi
 
-if [ $MAGE_RUN_STATIC_DEPLOY = 1 ]; then
-	echo "\n* Deploy static content ..."
+if [ $MAGE_RUN_STATIC_CONTENT_DEPLOY = 1 ]; then
+	printf "\n* Deploy static content ..."
 	gosu magento2 magento setup:static-content:deploy
 fi
 
+if [ $MAGE_RUN_SETUP_DI_COMPILE = 1 ]; then
+	printf "\n* Run code compilation..."
+	gosu magento2 magento setup:di:compile
+fi
+
 if [ "$1" = 'magento' ] || [ "$1" = 'phpunit' ]; then
-	echo "Execute command $@"
+	printf "\n* Execute command $@"
 	service apache2 start
 	if [ "$1" = 'phpunit' ]; then cd dev/tests/functional/; fi
+	gosu php utils/generate.php
 	exec gosu magento2 "$@"
 fi
 
@@ -120,5 +174,5 @@ if [ -f /var/run/apache2/apache2.pid  ]; then
     rm -f /var/run/apache2/apache2.pid
 fi
 
-echo "\n* Start Apache in foreground";
+printf "\n* Start Apache in foreground";
 exec apache2 -DFOREGROUND
