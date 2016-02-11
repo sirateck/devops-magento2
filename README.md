@@ -105,15 +105,23 @@ See in [Dockerfile](Dockerfile) at the end for variables list.
 You can install custom packages like *magento2 modules* after a fresh install during a run command.  
 To do that just enter your packages repositories, packages urls and modules names in environments variables: `CUSTOM_REPOSITORIES`,`CUSTOM_PACKAGES`,`CUSTOM_MODULES`.
 
-Environments variables file example (*Eg. module.env*):
+Environments variables file example (*Eg. module.env file*):
 ```
 CUSTOM_REPOSITORIES=vcs git@github.com:magento/magento2-samples.git
 CUSTOM_PACKAGES=magento/sample-module-webflow dev-master
 CUSTOM_MODULES=Magento_SampleWebFlow
 ```
 
-In `CUSTOM_REPOSITORIES` variable you must do enter **type** and **repository**.  
-In `CUSTOM_PACKAGES`, it's possible to add version or branch name.  
+You can put many values separated by a comma like this:
+```
+CUSTOM_REPOSITORIES=vcs git@github.com:magento/magento2-samples.git, antoher_type another_repo
+CUSTOM_PACKAGES=magento/sample-module-webflow dev-master,magento/sample-module-newpage
+CUSTOM_MODULES=Magento_SampleWebFlow,Magento_SampleNewPage
+```
+
+In `CUSTOM_REPOSITORIES` variable you must do enter **type** and **repository** separated by space.  
+In `CUSTOM_PACKAGES`, it's possible to add version or branch name after package name.  
+
 See https://getcomposer.org/doc/05-repositories.md
 
 Your modules are enabled automatically.
