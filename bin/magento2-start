@@ -1,16 +1,17 @@
 #!/bin/bash
-set +e
+set -e
 
 printf "\n* Dockerize templates and Wait for Mysql server"
 # Create .composer directory to copy auth.json
 gosu magento2 mkdir /home/magento2/.composer > /dev/null 2>&1
 
+# Template files are not deleted after dockerize, maybe they will be reused by --env-file argument
 gosu magento2 dockerize -template /tmp/auth.json.tmpl:/home/magento2/.composer/auth.json \
 												-template /tmp/phpunit.xml.tmpl:dev/tests/functional/phpunit.xml \
 												-template /tmp/credentials.xml.tmpl:dev/tests/functional/credentials.xml \
 												-template /tmp/config.xml.tmpl:dev/tests/functional/etc/config.xml \
 												-wait tcp://$MAGE_DB_HOST:$MAGE_DB_PORT
-# Template files are not deleted may be are reused by --env-file argument
+
 
 
 
@@ -99,28 +100,39 @@ read -r -a CUSTOM_REPOSITORIES <<< "$CUSTOM_REPOSITORIES"
 read -r -a CUSTOM_PACKAGES <<< "$CUSTOM_PACKAGES"
 read -r -a CUSTOM_MODULES <<< "$CUSTOM_MODULES"
 IFS=$OLDIFS
+
 # Add custom repositories to composer config
 if [ ! ${#CUSTOM_REPOSITORIES[*]} = 0 ]; then
 	cnt_repo=$((${#CUSTOM_REPOSITORIES[*]} - 1))
 	for i in `seq 0 $cnt_repo`
 	do
 		j=$(($i + 100)) # increase j to not erase magento repo
-		gosu magento2 composer config repositories.$j ${CUSTOM_REPOSITORIES[$i]}
+		repo="$(echo ${CUSTOM_REPOSITORIES[$i]} | sed 's/^[ \t]*//;s/[ \t]*$//')"
+		printf "\nAdd Repository $repo to composer.json"
+		gosu magento2 composer config repositories.$j $repo
 	done
 
 fi
 
 # Add required packages
-for package in ${CUSTOM_PACKAGES[*]}; do
-	printf "\n Install package $package"
-	gosu magento2 composer require $package
-done
+if [ ! ${#CUSTOM_PACKAGES[*]} = 0 ]; then
+	cnt_package=$((${#CUSTOM_PACKAGES[*]} - 1))
+	for i in `seq 0 $cnt_package`; do
+		package=`echo ${CUSTOM_PACKAGES[$i]} | sed 's/^[ \t]*//;s/[ \t]*$//'`
+		printf "\nInstall package $package"
+		gosu magento2 composer require $package
+	done
+fi
 
 # Enable/Install modules
-for module in ${CUSTOM_MODULES[*]}; do
-	gosu magento2 magento module:enable --clear-static-content $module
-	gosu magento2 magento setup:upgrade
-done
+if [ ! ${#CUSTOM_MODULES[*]} = 0 ]; then
+	cnt_modules=$((${#CUSTOM_MODULES[*]} - 1))
+	for i in `seq 0 $cnt_modules`; do
+		module=`echo ${CUSTOM_MODULES[$i]} | sed 's/^[ \t]*//;s/[ \t]*$//'`
+		gosu magento2 magento module:enable --clear-static-content $module
+		gosu magento2 magento setup:upgrade
+	done
+fi
 
 printf "\n* Set deploy mode to developer\n"
 gosu magento2 magento deploy:mode:set $MAGE_RUN_DEPLOY_MODE
