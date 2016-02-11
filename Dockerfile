@@ -168,9 +168,9 @@ ENV MAGE_RUN_REINDEX=1 \
 # Env var used for custom package composer installation
 # Env CUSTOM_MODULE is used for enable your module after required by composer
 #============================================
-ENV CUSTOM_REPOSITORIES= \
-  CUSTOM_PACKAGES= \
-  CUSTOM_MODULES=
+ENV CUSTOM_REPOSITORIES="" \
+  CUSTOM_PACKAGES="" \
+  CUSTOM_MODULES=""
 
 # Set developer mode in htaccess
 RUN sed -i -e"s/#   SetEnv MAGE_MODE developer/   SetEnv MAGE_MODE developer/g" .htaccess
