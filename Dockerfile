@@ -33,6 +33,11 @@ RUN apt-get update \
 RUN curl -o /usr/local/bin/gosu -fsSL "https://github.com/tianon/gosu/releases/download/1.7/gosu-$(dpkg --print-architecture)" \
 	  && chmod +x /usr/local/bin/gosu
 
+		# Get dockerize (used for waiting services)
+RUN curl -o dockerize-linux-amd64-v0.2.0.tar.gz -sSOL https://github.com/jwilder/dockerize/releases/download/v0.2.0/dockerize-linux-amd64-v0.2.0.tar.gz
+RUN tar -C /usr/local/bin -xzvf dockerize-linux-amd64-v0.2.0.tar.gz
+RUN chmod u+x /usr/local/bin/dockerize
+
 #===============
 # PHP configuration
 #===============
@@ -55,35 +60,52 @@ RUN adduser --disabled-password --gecos "" magento2 \
   && usermod -a -G magento2 www-data
 
 WORKDIR /var/www/html/magento2
+RUN chown -R magento2:www-data /var/www/html/magento2
 
 # Magento Version
-ENV MAGE_VERSION=2.0.2 MAGE_SAMPLE_DATA_VERSION=2.0.2
+ENV MAGE_VERSION=2.0.1 MAGE_SAMPLE_DATA_VERSION=100.0.2
+
+#=================================================
+# ENV credentials for repo.magento.com and github
+# Fake but valid credentials
+# You can put yours tokens with environments variables
+#=================================================
+ENV GITHUB_API_TOKEN=b5c21d42265d58f189660cf3d582f4ea120c354e \
+  MAGE_ACCOUNT_PUBLIC_KEY=e3b8d4033c8f6440aec19950253a8cb3 \
+	MAGE_ACCOUNT_PRIVATE_KEY=8a297c071a7c3085ea0630283c96f002
+
+ENV DOCKERIZE_TEMPLATES_PATH /home/magento2/dockerize
+
+#==========================================
+# Prepare Dockerize template for Auth, ocmpsoer and MTF config
+#==========================================
+COPY conf/auth.json.tmpl \
+  conf/composer.json.tmpl \
+	conf/mtf/phpunit.xml.tmpl \
+	conf/mtf/credentials.xml.tmpl \
+	conf/mtf/etc/config.xml.tmpl \
+	/home/magento2/dockerize/
+
+RUN chown -R magento2:magento2 $DOCKERIZE_TEMPLATES_PATH
+
+# Create .composer directory in user home
+RUN gosu magento2 mkdir /home/magento2/.composer/
+
+# Dockerize auth and composer config
+RUN gosu magento2 dockerize -template $DOCKERIZE_TEMPLATES_PATH/auth.json.tmpl:/home/magento2/.composer/auth.json \
+												-template $DOCKERIZE_TEMPLATES_PATH/composer.json.tmpl:/var/www/html/magento2/composer.json
+
 
 # Get Magento CE release and sample data
-RUN curl -o magento2-CE-$MAGE_VERSION.tar.gz -sSOL https://github.com/magento/magento2/archive/$MAGE_VERSION.tar.gz \
- && tar -xzf magento2-CE-$MAGE_VERSION.tar.gz
-
-RUN curl -o magento2-sample-data-$MAGE_SAMPLE_DATA_VERSION.tar.gz -sSOL https://github.com/magento/magento2-sample-data/archive/$MAGE_SAMPLE_DATA_VERSION.tar.gz \
-  && tar -xzf magento2-sample-data-$MAGE_SAMPLE_DATA_VERSION.tar.gz
-
-RUN cp -rf magento2-$MAGE_VERSION/* . \
-  && cp magento2-$MAGE_VERSION/.htaccess . \
-  && cp -rf magento2-sample-data-$MAGE_SAMPLE_DATA_VERSION/* .
-
-RUN rm -rf magento2-CE-$MAGE_VERSION.tar.gz magento2-sample-data-$MAGE_SAMPLE_DATA_VERSION.tar.gz magento2-$MAGE_VERSION/ magento2-sample-data-$MAGE_SAMPLE_DATA_VERSION/
-
-# Get dockerize (used for waiting services)
-RUN curl -o dockerize-linux-amd64-v0.2.0.tar.gz -sSOL https://github.com/jwilder/dockerize/releases/download/v0.2.0/dockerize-linux-amd64-v0.2.0.tar.gz
-RUN tar -C /usr/local/bin -xzvf dockerize-linux-amd64-v0.2.0.tar.gz
-RUN chmod u+x /usr/local/bin/dockerize
+RUN gosu magento2 composer install --prefer-dist --no-progress
 
 #=========================
 # Download MFT
 #=========================
 WORKDIR dev/tests/functional/
-RUN composer install
-ENV PATH=/var/www/html/magento2/dev/tests/functional/vendor/bin:$PATH
+RUN  gosu magento2 composer install --prefer-dist --no-progress
 WORKDIR /var/www/html/magento2
+
 
 #=============================
 # Set file system ownership and permissions
@@ -95,22 +117,15 @@ RUN find . -type d -exec chmod 770 {} \; \
 	&& chmod u+x /var/www/html/magento2/dev/tests/functional/vendor/phpunit/phpunit/phpunit
 
 
+# magento and phpunit binaries to global path
+ENV PATH=/var/www/html/magento2/dev/tests/functional/vendor/bin:/var/www/html/magento2/bin:$PATH
+RUN echo "PATH=/var/www/html/magento2/dev/tests/functional/vendor/bin:/var/www/html/magento2/bin:$PATH" >> /home/magento2/.profile
 
-# magento binary to global path
-ENV PATH=/var/www/html/magento2/bin:$PATH
-RUN echo 'PATH=/var/www/html/magento2/bin:$PATH' >> /home/magento2/.profile
 #==========================
 # ENV variables used by magento installation
 #==========================
 ENV MYSQL_ROOT_PASSWORD magento2
 
-#=================================================
-# ENV credentials for repo.magento.com and github
-#================================================
-ENV GITHUB_API_TOKEN="" \
-  MAGE_ACCOUNT_PUBLIC_KEY="" \
-  MAGE_ACCOUNT_PRIVATE_KEY=""
-COPY conf/auth.json.tmpl /tmp/
 
 #====================================================
 # If you want to use sample data with installation or reinstallaiton,
@@ -173,12 +188,11 @@ ENV CUSTOM_REPOSITORIES="" \
   CUSTOM_MODULES=""
 
 # Set developer mode in htaccess
-RUN sed -i -e"s/#   SetEnv MAGE_MODE developer/   SetEnv MAGE_MODE developer/g" .htaccess
-
-#=======================
-# Prepare Dockerize template for MTF config
-#=======================
-COPY conf/auth.json.tmpl conf/mtf/phpunit.xml.tmpl conf/mtf/credentials.xml.tmpl conf/mtf/etc/config.xml.tmpl /tmp/
+RUN gosu magento2 sed -i -e"s/#   SetEnv MAGE_MODE developer/   SetEnv MAGE_MODE developer/g" .htaccess
+# change rewrite base to magento2
+RUN gosu magento2 sed -i -e"s/#RewriteBase \/magento\//RewriteBase \/magento2\//g" .htaccess
+# Set minimum-stability to dev in composer.json
+RUN gosu magento2 sed -i -e"s/\"minimum-stability\": \"alpha\"/\"minimum-stability\": \"dev\"/g" composer.json
 
 
 #==========================

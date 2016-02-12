@@ -2,24 +2,13 @@
 set -e
 
 printf "\n* Dockerize templates and Wait for Mysql server"
-# Create .composer directory to copy auth.json
-gosu magento2 mkdir /home/magento2/.composer > /dev/null 2>&1
 
 # Template files are not deleted after dockerize, maybe they will be reused by --env-file argument
-gosu magento2 dockerize -template /tmp/auth.json.tmpl:/home/magento2/.composer/auth.json \
-												-template /tmp/phpunit.xml.tmpl:dev/tests/functional/phpunit.xml \
-												-template /tmp/credentials.xml.tmpl:dev/tests/functional/credentials.xml \
-												-template /tmp/config.xml.tmpl:dev/tests/functional/etc/config.xml \
+gosu magento2 dockerize -template $DOCKERIZE_TEMPLATES_PATH/auth.json.tmpl:/home/magento2/.composer/auth.json \
+												-template $DOCKERIZE_TEMPLATES_PATH/phpunit.xml.tmpl:dev/tests/functional/phpunit.xml \
+												-template $DOCKERIZE_TEMPLATES_PATH/credentials.xml.tmpl:dev/tests/functional/credentials.xml \
+												-template $DOCKERIZE_TEMPLATES_PATH/config.xml.tmpl:dev/tests/functional/etc/config.xml \
 												-wait tcp://$MAGE_DB_HOST:$MAGE_DB_PORT
-
-
-
-
-printf "\n* Run composer install "
-gosu magento2 composer install
-
-printf "\n* Set minimum-statility to 'dev' in composer.json "
-gosu magento2 sed -i -e"s/\"minimum-stability\": \"alpha\"/\"minimum-stability\": \"dev\"/g" composer.json
 
 # Check if database exists or if Reinstall is true
 # If not, try to create db and user granted
@@ -133,7 +122,7 @@ if [ ! ${#CUSTOM_MODULES[*]} = 0 ]; then
 	done
 fi
 
-printf "\n* Set deploy mode to developer\n"
+printf "\n* Set deploy mode to $MAGE_RUN_DEPLOY_MODE\n"
 gosu magento2 magento deploy:mode:set $MAGE_RUN_DEPLOY_MODE
 
 # @TODO check if it is really necessary
