@@ -105,18 +105,12 @@ IFS=$OLDIFS
 # Add custom repositories to composer config
 if [ ! ${#CUSTOM_REPOSITORIES[*]} = 0 ]; then
 	cnt_repo=$((${#CUSTOM_REPOSITORIES[*]} - 1))
-	for i in `seq 0 $cnt_repo`
-	do
+	for i in `seq 0 $cnt_repo`; do
 		j=$(($i + 100)) # increase j to not erase magento repo
 		repo="$(echo ${CUSTOM_REPOSITORIES[$i]} | sed 's/^[ \t]*//;s/[ \t]*$//')"
 		printf "\nAdd Repository $repo to composer.json"
 		gosu magento2 composer config repositories.$j $repo
 	done
-
-
-# Add custom repository to composer config
-if [ ! -z "$CUSTOM_REPOSITORIES" ]; then
-		gosu magento2 composer config repositories.1 $CUSTOM_REPOSITORIES
 fi
 
 # Add required packages
