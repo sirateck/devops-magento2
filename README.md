@@ -44,15 +44,13 @@ You can customize magento installation with environments variables.
 
 To do this, you have two ways:
 
-1. On inherit this image
+1. On inherit this image  
+  Simply redeclare Env vars you want to modify in your Dockerfile.  
+  It's very unsecure, so not publish your image with your real credentials.
 
-Simply redeclare Env vars you want to modify in your Dockerfile.  
-It's very unsecure, so not publish your image with your real credentials.
-
-2. On Run command
-
-When you `run` your container, add `-e`, `--env` or `--env-file` argument to the run command.  
-The best way with many variables is `--env-file`.
+2. On Run command  
+  When you `run` your container, add `-e`, `--env` or `--env-file` argument to the run command.  
+  The best way with many variables is `--env-file`.
 
 Example with `--env-file`:
 ```
