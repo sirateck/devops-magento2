@@ -1,0 +1,79 @@
+{
+    "name": "magento/project-community-edition",
+    "description": "eCommerce Platform for Growth (Community Edition)",
+    "type": "project",
+    "version": "{{ .Env.MAGE_VERSION }}",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://repo.magento.com/"
+        }
+    ],
+    "require": {
+        "magento/product-community-edition": "{{ .Env.MAGE_VERSION }}",
+        "composer/composer": "@alpha",
+        "magento/module-bundle-sample-data": "{{ .Env.MAGE_SAMPLE_DATA_VERSION }}",
+        "magento/module-theme-sample-data": "{{ .Env.MAGE_SAMPLE_DATA_VERSION }}",
+        "magento/module-widget-sample-data": "{{ .Env.MAGE_SAMPLE_DATA_VERSION }}",
+        "magento/module-catalog-sample-data": "{{ .Env.MAGE_SAMPLE_DATA_VERSION }}",
+        "magento/module-customer-sample-data": "{{ .Env.MAGE_SAMPLE_DATA_VERSION }}",
+        "magento/module-cms-sample-data": "{{ .Env.MAGE_SAMPLE_DATA_VERSION }}",
+        "magento/module-catalog-rule-sample-data": "{{ .Env.MAGE_SAMPLE_DATA_VERSION }}",
+        "magento/module-sales-rule-sample-data": "{{ .Env.MAGE_SAMPLE_DATA_VERSION }}",
+        "magento/module-review-sample-data": "{{ .Env.MAGE_SAMPLE_DATA_VERSION }}",
+        "magento/module-tax-sample-data": "{{ .Env.MAGE_SAMPLE_DATA_VERSION }}",
+        "magento/module-sales-sample-data": "{{ .Env.MAGE_SAMPLE_DATA_VERSION }}",
+        "magento/module-grouped-product-sample-data": "{{ .Env.MAGE_SAMPLE_DATA_VERSION }}",
+        "magento/module-downloadable-sample-data": "{{ .Env.MAGE_SAMPLE_DATA_VERSION }}",
+        "magento/module-msrp-sample-data": "{{ .Env.MAGE_SAMPLE_DATA_VERSION }}",
+        "magento/module-configurable-sample-data": "{{ .Env.MAGE_SAMPLE_DATA_VERSION }}",
+        "magento/module-product-links-sample-data": "{{ .Env.MAGE_SAMPLE_DATA_VERSION }}",
+        "magento/module-wishlist-sample-data": "{{ .Env.MAGE_SAMPLE_DATA_VERSION }}",
+        "magento/module-swatches-sample-data": "{{ .Env.MAGE_SAMPLE_DATA_VERSION }}",
+        "magento/sample-data-media": "{{ .Env.MAGE_SAMPLE_DATA_VERSION }}",
+        "magento/module-offline-shipping-sample-data": "{{ .Env.MAGE_SAMPLE_DATA_VERSION }}"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.1.0",
+        "squizlabs/php_codesniffer": "1.5.3",
+        "phpmd/phpmd": "@stable",
+        "pdepend/pdepend": "2.2.2",
+        "sjparkinson/static-review": "~4.1",
+        "fabpot/php-cs-fixer": "~1.2",
+        "lusitanian/oauth": "~0.3 <=0.7.0"
+    },
+    "config": {
+        "use-include-path": true
+    },
+    "autoload": {
+        "psr-4": {
+            "Magento\\Framework\\": "lib/internal/Magento/Framework/",
+            "Magento\\Setup\\": "setup/src/Magento/Setup/",
+            "Magento\\": "app/code/Magento/"
+        },
+        "psr-0": {
+            "": "app/code/"
+        },
+        "files": [
+            "app/etc/NonComposerComponentRegistration.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Magento\\Sniffs\\": "dev/tests/static/framework/Magento/Sniffs/",
+            "Magento\\Tools\\": "dev/tools/Magento/Tools/",
+            "Magento\\Tools\\Sanity\\": "dev/build/publication/sanity/Magento/Tools/Sanity/",
+            "Magento\\TestFramework\\Inspection\\": "dev/tests/static/framework/Magento/TestFramework/Inspection/",
+            "Magento\\TestFramework\\Utility\\": "dev/tests/static/framework/Magento/TestFramework/Utility/"
+        }
+    },
+    "minimum-stability": "alpha",
+    "prefer-stable": true,
+    "extra": {
+        "magento-force": "override"
+    }
+}
