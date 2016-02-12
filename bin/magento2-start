@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-printf "\n* Dockerize templates and Wait for Mysql server"
+printf "\n* Dockerize templates and Wait for Mysql server\n"
 
 # Template files are not deleted after dockerize, maybe they will be reused by --env-file argument
 gosu magento2 dockerize -template $DOCKERIZE_TEMPLATES_PATH/auth.json.tmpl:/home/magento2/.composer/auth.json \
@@ -25,7 +25,7 @@ if [ -z $DB_EXISTS ]; then
 fi
 
 if [ $MAGE_REINSTALL = 1 ] || [ ! -f /var/www/html/magento2/app/etc/config.php ] && [ ! -f /var/www/html/magento2/app/etc/env.php ]; then
-	printf "\n* Start Magento2 Command line intallation ..."
+	printf "* Start Magento2 Command line intallation ..."
 
 	printf "\n* Run install command: "
 	printf "\n 		su magento2 -c 'bin/magento setup:install \n'  \\ "
