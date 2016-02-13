@@ -8,7 +8,7 @@ gosu magento2 dockerize -template $DOCKERIZE_TEMPLATES_PATH/auth.json.tmpl:/home
 												-template $DOCKERIZE_TEMPLATES_PATH/phpunit.xml.tmpl:dev/tests/functional/phpunit.xml \
 												-template $DOCKERIZE_TEMPLATES_PATH/credentials.xml.tmpl:dev/tests/functional/credentials.xml \
 												-template $DOCKERIZE_TEMPLATES_PATH/config.xml.tmpl:dev/tests/functional/etc/config.xml \
-												-wait tcp://$MAGE_DB_HOST:$MAGE_DB_PORT
+												-wait tcp://$MAGE_DB_HOST:$MAGE_DB_PORT -timeout 30s
 
 # Check if database exists or if Reinstall is true
 # If not, try to create db and user granted
