@@ -7,7 +7,7 @@ env:
 
 before_install:
   - sudo apt-get remove -qqy docker-engine
-  - sudo apt-get autoremove --purge docker-engine
+  - sudo apt-get autoremove -qqy --purge docker-engine
   - sudo apt-get update
   - sudo apt-get install -qqy docker-engine
   - sudo rm /usr/local/bin/docker-compose
