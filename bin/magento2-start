@@ -169,8 +169,10 @@ fi
 if [ "$1" = 'magento' ] || [ "$1" = 'phpunit' ]; then
 	printf "\n* Execute command $@"
 	service apache2 start
-	if [ "$1" = 'phpunit' ]; then cd dev/tests/functional/; fi
-	gosu magento2 php utils/generate.php
+	if [ "$1" = 'phpunit' ]; then
+		cd dev/tests/functional/
+		gosu magento2 php utils/generate.php
+  fi
 	exec gosu magento2 "$@"
 fi
 
