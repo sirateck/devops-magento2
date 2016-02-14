@@ -1,4 +1,4 @@
-sut:
+magento2:
   build: .
   ports:
     - "8080:80"
