@@ -3,5 +3,5 @@ services:
   - docker
 
 script:
-  - docker-compose -f docker-compose-test.yml build
-  - docker-compose -f docker-compose-test.yml run --rm -e $GITHUB_API_TOKEN -e $MAGE_ACCOUNT_PUBLIC_KEY -e $MAGE_ACCOUNT_PRIVATE_KEY magento2 magento
+  - docker-compose -f docker-compose.test.yml build
+  - docker-compose -f docker-compose.test.yml run --rm -e $GITHUB_API_TOKEN -e $MAGE_ACCOUNT_PUBLIC_KEY -e $MAGE_ACCOUNT_PRIVATE_KEY sut magento
