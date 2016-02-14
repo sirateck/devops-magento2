@@ -2,19 +2,6 @@ sudo: required
 services:
   - docker
 
-env:
-  DOCKER_COMPOSE_VERSION: 1.6.0
-
-before_install:
-  - sudo apt-get remove -qqy docker-engine
-  - sudo apt-get autoremove -qqy --purge docker-engine
-  - sudo apt-get update
-  - sudo apt-get install -qqy docker-engine
-  - sudo rm /usr/local/bin/docker-compose
-  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-  - chmod +x docker-compose
-  - sudo mv docker-compose /usr/local/bin
-
 script:
   - docker-compose -f docker-compose-test.yml build
   - docker-compose -f docker-compose-test.yml run --rm -e $GITHUB_API_TOKEN -e $MAGE_ACCOUNT_PUBLIC_KEY -e $MAGE_ACCOUNT_PRIVATE_KEY magento2 magento
