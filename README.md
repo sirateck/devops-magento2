@@ -1,5 +1,7 @@
 # Docker image Magento2 with Magento Testing Framework (MTF)
 
+[![Build Status](https://travis-ci.org/sirateck/devops-magento2.svg?branch=master)](https://travis-ci.org/sirateck/devops-magento2)
+
 Used for continuous integration/delivery of Magento2 components (modules,themes etc ...)
 This image, based on official php repo, install magento2 and MTF sources with composer.
 
