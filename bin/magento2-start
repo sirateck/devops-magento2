@@ -1,5 +1,6 @@
 #!/bin/bash
-set -e
+# Set +e because it's used in dev environment and waring due to password used in mysql command line
+set +e
 
 printf "\n* Dockerize templates and Wait for Mysql server\n"
 
@@ -8,24 +9,28 @@ gosu magento2 dockerize -template $DOCKERIZE_TEMPLATES_PATH/auth.json.tmpl:/home
 												-template $DOCKERIZE_TEMPLATES_PATH/phpunit.xml.tmpl:dev/tests/functional/phpunit.xml \
 												-template $DOCKERIZE_TEMPLATES_PATH/credentials.xml.tmpl:dev/tests/functional/credentials.xml \
 												-template $DOCKERIZE_TEMPLATES_PATH/config.xml.tmpl:dev/tests/functional/etc/config.xml \
-												-wait tcp://$MAGE_DB_HOST:$MAGE_DB_PORT -timeout 30s
+												-wait tcp://$MAGE_DB_HOST:$MAGE_DB_PORT \
+												-timeout 30s
+
+# Set github oauthtoken again, maybe is changed by env vars
+gosu magento2 composer config -g github-oauth.github.com $GITHUB_API_TOKEN
 
 # Check if database exists or if Reinstall is true
 # If not, try to create db and user granted
-DB_EXISTS=`mysql -h $MAGE_DB_HOST -u root -p$MYSQL_ROOT_PASSWORD --execute="SHOW DATABASES;" | grep "$MAGE_DB_NAME"`
+DB_EXISTS=`mysql -h $MAGE_DB_HOST -u root -p$MYSQL_ROOT_PASSWORD  --execute="SHOW DATABASES;" | grep "$MAGE_DB_NAME"`
 if [ -z $DB_EXISTS ]; then
 
 	# Create database if no already exists
-	mysql -h $MAGE_DB_HOST -u root -p$MYSQL_ROOT_PASSWORD --execute="CREATE DATABASE IF NOT EXISTS $MAGE_DB_NAME;";
+	mysql  -h $MAGE_DB_HOST -u root -p$MYSQL_ROOT_PASSWORD  --execute="CREATE DATABASE IF NOT EXISTS $MAGE_DB_NAME;"
 
 	# Grant privileges
-	mysql -h $MAGE_DB_HOST -u root -p$MYSQL_ROOT_PASSWORD --execute="GRANT ALL ON $MAGE_DB_NAME.* to $MAGE_DB_USER@'localhost' IDENTIFIED BY '$MAGE_DB_PASSWORD'; " \
-  	&& mysql -h $MAGE_DB_HOST -u root -p$MYSQL_ROOT_PASSWORD --execute="GRANT ALL ON $MAGE_DB_NAME.* to $MAGE_DB_USER@'%' IDENTIFIED BY '$MAGE_DB_PASSWORD'; " \
-  	&& mysql -h $MAGE_DB_HOST -u root -p$MYSQL_ROOT_PASSWORD --execute="flush privileges;"
+	mysql  -h $MAGE_DB_HOST -u root -p$MYSQL_ROOT_PASSWORD  --execute="GRANT ALL ON $MAGE_DB_NAME.* to $MAGE_DB_USER@'localhost' IDENTIFIED BY '$MAGE_DB_PASSWORD'; " \
+  	&& mysql  -h $MAGE_DB_HOST -u root -p$MYSQL_ROOT_PASSWORD  --execute="GRANT ALL ON $MAGE_DB_NAME.* to $MAGE_DB_USER@'%' IDENTIFIED BY '$MAGE_DB_PASSWORD'; "  \
+  	&& mysql -h $MAGE_DB_HOST -u root -p$MYSQL_ROOT_PASSWORD  --execute="flush privileges;"
 fi
 
 if [ $MAGE_REINSTALL = 1 ] || [ ! -f /var/www/html/magento2/app/etc/config.php ] && [ ! -f /var/www/html/magento2/app/etc/env.php ]; then
-	printf "* Start Magento2 Command line intallation ..."
+	printf "\n* Start Magento2 Command line intallation ..."
 
 	printf "\n* Run install command: "
 	printf "\n 		su magento2 -c 'bin/magento setup:install \n'  \\ "

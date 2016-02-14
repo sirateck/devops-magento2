@@ -23,6 +23,7 @@ RUN apt-get update \
 		libxslt1-dev \
 		libicu-dev \
 		mysql-client \
+		libmysqlclient-dev \
     && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
     && docker-php-ext-configure zip --enable-zip \
     && docker-php-ext-install mcrypt gd intl mbstring soap xsl zip pdo_mysql \
@@ -95,6 +96,7 @@ RUN gosu magento2 mkdir /home/magento2/.composer/
 RUN gosu magento2 dockerize -template $DOCKERIZE_TEMPLATES_PATH/auth.json.tmpl:/home/magento2/.composer/auth.json \
 												-template $DOCKERIZE_TEMPLATES_PATH/composer.json.tmpl:/var/www/html/magento2/composer.json
 
+RUN gosu magento2 composer config -g github-oauth.github.com $GITHUB_API_TOKEN
 
 # Get Magento CE release and sample data
 RUN gosu magento2 composer install --prefer-dist --no-progress
