@@ -203,8 +203,8 @@ RUN gosu magento2 sed -i -e"s/\"minimum-stability\": \"alpha\"/\"minimum-stabili
 # You must to run your selenium server
 # the best way is to use selenium image with docker-compose
 #=========================
-ENV SELENIUM_HOST selenium \
-  SELENIUM_PORT 4444
+ENV SELENIUM_HOST=selenium \
+  SELENIUM_PORT=4444
 
 COPY bin/magento2-start /usr/local/bin/
 ENTRYPOINT ["magento2-start"]
