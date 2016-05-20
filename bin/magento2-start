@@ -12,6 +12,9 @@ gosu magento2 dockerize -template $DOCKERIZE_TEMPLATES_PATH/auth.json.tmpl:/home
 												-wait tcp://$MAGE_DB_HOST:$MAGE_DB_PORT \
 												-timeout 30s
 
+# Update composer
+composer selfupdate
+
 # Set github oauthtoken again, maybe is changed by env vars
 gosu magento2 composer config -g github-oauth.github.com $GITHUB_API_TOKEN
 
