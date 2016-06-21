@@ -44,6 +44,8 @@ RUN chmod u+x /usr/local/bin/dockerize
 #===============
 ENV PHP_TIMEZONE Europe/Paris
 COPY conf/php.ini /usr/local/etc/php/
+COPY conf/apache2/apache2.conf /etc/apache2/
+COPY conf/apache2/site-available/000-default.conf /etc/apache2/site-available/
 RUN echo "date.timezone = '$PHP_TIMEZONE'" >> /usr/local/etc/php/php.ini \
 	&& ln -s /usr/local/bin/php /usr/bin/php
 
@@ -191,8 +193,13 @@ ENV CUSTOM_REPOSITORIES="" \
 
 # Set developer mode in htaccess
 RUN gosu magento2 sed -i -e"s/#   SetEnv MAGE_MODE developer/   SetEnv MAGE_MODE developer/g" .htaccess
-# change rewrite base to magento2
-RUN gosu magento2 sed -i -e"s/#RewriteBase \/magento\//RewriteBase \/magento2\//g" .htaccess
+
+###
+# Change rewrite base to magento2
+# Not used anymore, due to custom apache2 conf !!
+###
+# RUN gosu magento2 sed -i -e"s/#RewriteBase \/magento\//RewriteBase \/magento2\//g" .htaccess
+
 # Set minimum-stability to dev in composer.json
 RUN gosu magento2 sed -i -e"s/\"minimum-stability\": \"alpha\"/\"minimum-stability\": \"dev\"/g" composer.json
 
