@@ -101,13 +101,13 @@ RUN gosu magento2 dockerize -template $DOCKERIZE_TEMPLATES_PATH/auth.json.tmpl:/
 RUN gosu magento2 composer config -g github-oauth.github.com $GITHUB_API_TOKEN
 
 # Get Magento CE release and sample data
-RUN gosu magento2 composer install --prefer-dist
+RUN gosu magento2 composer install
 
 #=========================
 # Download MFT
 #=========================
 WORKDIR dev/tests/functional/
-RUN  gosu magento2 composer install --prefer-dist
+RUN  gosu magento2 composer install
 WORKDIR /var/www/html/magento2
 
 
