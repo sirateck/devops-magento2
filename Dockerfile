@@ -66,7 +66,7 @@ WORKDIR /var/www/html/magento2
 RUN chown -R magento2:www-data /var/www/html/magento2
 
 # Magento Version
-ENV MAGE_VERSION="2.0" MAGE_SAMPLE_DATA_VERSION="100.0.*"
+ENV MAGE_VERSION="2.0.7" MAGE_SAMPLE_DATA_VERSION="100.0.*"
 
 #=================================================
 # ENV credentials for repo.magento.com and github
