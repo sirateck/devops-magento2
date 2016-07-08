@@ -185,4 +185,5 @@ if [ -f /var/run/apache2/apache2.pid  ]; then
 fi
 
 printf "\n* Start Apache in foreground";
-exec apache2 -DFOREGROUND
+#exec apache2 -DFOREGROUND
+apache2-foreground
