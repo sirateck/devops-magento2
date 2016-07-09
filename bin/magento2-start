@@ -32,11 +32,11 @@ if [ -z $DB_EXISTS ]; then
   	&& mysql -h $MAGE_DB_HOST -u root -p$MYSQL_ROOT_PASSWORD  --execute="flush privileges;"
 fi
 
-if [ $MAGE_REINSTALL = 1 ] || [ ! -f /var/www/html/magento2/app/etc/config.php ] && [ ! -f /var/www/html/magento2/app/etc/env.php ]; then
+if [ $MAGE_REINSTALL = 1 ] || [ ! -f /var/www/html/app/etc/config.php ] && [ ! -f /var/www/html/app/etc/env.php ]; then
 	printf "\n* Start Magento2 Command line intallation ..."
 
 	printf "\n* Run install command: "
-	printf "\n 		su magento2 -c 'bin/magento setup:install \n'  \\ "
+	printf "\n 		gosu magento2 -c 'bin/magento setup:install \n'  \\ "
 	echo "					'--db-host=$MAGE_DB_HOST' \\ "
 	echo "					'--db-name=$MAGE_DB_NAME' \\"
 	echo "					'--db-user=$MAGE_DB_USER' \\"
@@ -180,9 +180,9 @@ if [ "$1" = 'magento' ] || [ "$1" = 'phpunit' ]; then
 fi
 
 # We need to remove the pid file or Apache won't start after being stopped
-if [ -f /var/run/apache2/apache2.pid  ]; then
-    rm -f /var/run/apache2/apache2.pid
-fi
+#if [ -f /var/run/apache2/apache2.pid  ]; then
+#    rm -f /var/run/apache2/apache2.pid
+#fi
 
 printf "\n* Start Apache in foreground";
 #exec apache2 -DFOREGROUND

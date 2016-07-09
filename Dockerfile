@@ -24,6 +24,8 @@ RUN apt-get update \
 		libicu-dev \
 		mysql-client \
 		libmysqlclient-dev \
+		vim \
+		nano \
     && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
     && docker-php-ext-configure zip --enable-zip \
     && docker-php-ext-install mcrypt gd intl mbstring soap xsl zip pdo_mysql \
@@ -44,8 +46,8 @@ RUN chmod u+x /usr/local/bin/dockerize
 #===============
 ENV PHP_TIMEZONE Europe/Paris
 COPY conf/php.ini /usr/local/etc/php/
-COPY conf/apache2/apache2.conf /etc/apache2/
-COPY conf/apache2/site-available/000-default.conf /etc/apache2/site-available/
+#COPY conf/apache2/apache2.conf /etc/apache2/
+#COPY conf/apache2/site-available/000-default.conf /etc/apache2/site-available/
 RUN echo "date.timezone = '$PHP_TIMEZONE'" >> /usr/local/etc/php/php.ini \
 	&& ln -s /usr/local/bin/php /usr/bin/php
 
@@ -62,8 +64,8 @@ RUN adduser --disabled-password --gecos "" magento2 \
   && usermod -a -G www-data magento2 \
   && usermod -a -G magento2 www-data
 
-WORKDIR /var/www/html/magento2
-RUN chown -R magento2:www-data /var/www/html/magento2
+#WORKDIR /var/www/html/magento2
+RUN chown -R magento2:www-data /var/www/html
 
 # Magento Version
 ENV MAGE_VERSION="2.0.7" MAGE_SAMPLE_DATA_VERSION="100.0.*"
@@ -87,7 +89,7 @@ COPY conf/auth.json.tmpl \
 	conf/mtf/phpunit.xml.tmpl \
 	conf/mtf/credentials.xml.tmpl \
 	conf/mtf/etc/config.xml.tmpl \
-	/home/magento2/dockerize/
+	$DOCKERIZE_TEMPLATES_PATH/
 
 RUN chown -R magento2:magento2 $DOCKERIZE_TEMPLATES_PATH
 
@@ -96,7 +98,7 @@ RUN gosu magento2 mkdir /home/magento2/.composer/
 
 # Dockerize auth and composer config
 RUN gosu magento2 dockerize -template $DOCKERIZE_TEMPLATES_PATH/auth.json.tmpl:/home/magento2/.composer/auth.json \
-												-template $DOCKERIZE_TEMPLATES_PATH/composer.json.tmpl:/var/www/html/magento2/composer.json
+												-template $DOCKERIZE_TEMPLATES_PATH/composer.json.tmpl:/var/www/html/composer.json
 
 RUN gosu magento2 composer config -g github-oauth.github.com $GITHUB_API_TOKEN
 
@@ -108,7 +110,7 @@ RUN gosu magento2 composer install
 #=========================
 WORKDIR dev/tests/functional/
 RUN  gosu magento2 composer install
-WORKDIR /var/www/html/magento2
+WORKDIR /var/www/html
 
 
 #=============================
@@ -118,12 +120,12 @@ RUN chown -R magento2:www-data .
 RUN find . -type d -exec chmod 770 {} \; \
 	&& find . -type f -exec chmod 660 {} \; \
 	&& chmod u+x bin/magento \
-	&& chmod u+x /var/www/html/magento2/dev/tests/functional/vendor/phpunit/phpunit/phpunit
+	&& chmod u+x /var/www/html/dev/tests/functional/vendor/phpunit/phpunit/phpunit
 
 
 # magento and phpunit binaries to global path
-ENV PATH=/var/www/html/magento2/dev/tests/functional/vendor/bin:/var/www/html/magento2/bin:$PATH
-RUN echo "PATH=/var/www/html/magento2/dev/tests/functional/vendor/bin:/var/www/html/magento2/bin:$PATH" >> /home/magento2/.profile
+ENV PATH=/var/www/html/dev/tests/functional/vendor/bin:/var/www/html/bin:$PATH
+RUN echo "PATH=/var/www/html/dev/tests/functional/vendor/bin:/var/www/html/bin:$PATH" >> /home/magento2/.profile
 
 #==========================
 # ENV variables used by magento installation
